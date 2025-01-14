@@ -1,6 +1,8 @@
 using BtgItDerivApiPedidos.Configurations;
-using MassTransit;
+using BtgItDerivApiPedidos.Data;
 using BtgItDerivApiPedidos.Consumers;
+using MassTransit;
+using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,10 +21,10 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// // Adicionando RabbitMQ
+// Carregando configs do RabbitMQ
 builder.Services.Configure<RabbitMQConfiguration>(builder.Configuration.GetSection("RabbitMQ"));
 
-// Adicionando RabbitMQ via MassTransit
+// Adicionando MassTransit (RabbitMQ)
 builder.Services.AddMassTransit(x =>
 {
     x.AddConsumer<PedidoConsumer>();
@@ -46,6 +48,24 @@ builder.Services.AddMassTransit(x =>
         config.UseRawJsonSerializer();
     });
 });
+
+// Configurando MongoDB
+builder.Services.AddSingleton<IMongoClient, MongoClient>(sp =>
+{
+    var settings = builder.Configuration.GetSection("MongoDB").Get<MongoDBConfiguration>();
+    return new MongoClient(settings.ConnectionString);
+});
+
+builder.Services.AddScoped(sp =>
+{
+    var settings = builder.Configuration.GetSection("MongoDB").Get<MongoDBConfiguration>();
+    var client = sp.GetRequiredService<IMongoClient>();
+    return client.GetDatabase(settings.DatabaseName);
+});
+
+// Registrando os repositórios
+builder.Services.AddScoped<PedidoRepository>();
+builder.Services.AddScoped<ClienteRepository>();
 
 var app = builder.Build();
 
