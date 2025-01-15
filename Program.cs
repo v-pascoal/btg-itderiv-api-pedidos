@@ -1,6 +1,7 @@
 using BtgItDerivApiPedidos.Configurations;
 using BtgItDerivApiPedidos.Data;
 using BtgItDerivApiPedidos.Consumers;
+using BtgItDerivApiPedidos.Services;
 using MassTransit;
 using MongoDB.Driver;
 
@@ -67,6 +68,12 @@ builder.Services.AddScoped(sp =>
 builder.Services.AddScoped<PedidoRepository>();
 builder.Services.AddScoped<ClienteRepository>();
 
+// Registrando os serviços da camada de negócios
+builder.Services.AddScoped<PedidoService>();
+
+// Registrando os controllers
+builder.Services.AddControllers();
+
 var app = builder.Build();
 
 // Verificando ambiente do app
@@ -94,5 +101,5 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 }
 
-
+app.MapControllers();
 app.Run();

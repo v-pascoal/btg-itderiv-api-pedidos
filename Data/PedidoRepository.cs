@@ -38,5 +38,24 @@ namespace BtgItDerivApiPedidos.Data
 
             return result.Id;
         }
+
+        public async Task<Pedido> GetPedidoByCodigoAsync(int codigoCliente, int codigoPedido)
+        {
+            var filter = Builders<Pedido>.Filter.And(
+                Builders<Pedido>.Filter.Eq(p => p.CodigoCliente, codigoCliente),
+                Builders<Pedido>.Filter.Eq(p => p.CodigoPedido, codigoPedido)
+            );
+            return await _pedidosCollection.Find(filter).FirstOrDefaultAsync();
+        }
+
+        public async Task<long> GetQuantidadePedidosPorClienteAsync(int codigoCliente)
+        {
+            return await _pedidosCollection.CountDocumentsAsync(p => p.CodigoCliente == codigoCliente);
+        }
+
+        public async Task<List<Pedido>> GetPedidosPorClienteAsync(int codigoCliente)
+        {
+            return await _pedidosCollection.Find(p => p.CodigoCliente == codigoCliente).ToListAsync();
+        }
     }
 }
